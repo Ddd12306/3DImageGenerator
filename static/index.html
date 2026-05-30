@@ -261,7 +261,7 @@
             <div class="panel active" id="panel-image">
                 <div class="upload-zone" id="upload-zone">
                     <div class="upload-icon">📷</div>
-                    <p class="upload-text" id="upload-text">点击或拖拽上传宠物照片</p>
+                    <p class="upload-text" id="upload-text">点击或拖拽上传宠物照片，生成专属Q版形象</p>
                     <p class="hint">支持 JPG / PNG，最大 20MB</p>
                     <input type="file" id="file-input" accept="image/*">
                 </div>
@@ -273,8 +273,8 @@
             </div>
 
             <div class="panel" id="panel-text">
-                <textarea id="desc-input" placeholder="请详细描述你的宠物...&#10;&#10;例如：一只橘色英短猫，圆脸大眼，毛色为浅橘带白色胸前斑块，短粗尾巴，坐姿，微笑表情"></textarea>
-                <p class="hint" id="desc-hint">描述越详细，生成效果越好（品种、毛色、花纹、姿态、表情等）</p>
+                <textarea id="desc-input" placeholder="请详细描述宠物专属特征...&#10;&#10;例如：一只橘色英短猫，圆脸大眼，浅橘毛色，胸前有白色斑块，短粗尾巴，戴红色项圈，坐姿，微笑表情"></textarea>
+                <p class="hint" id="desc-hint">宠物模式会优先保留照片里的品种、毛色花纹、眼睛、耳朵鼻口、体态、表情神态和配饰等专属特征</p>
                 <button class="btn" id="btn-text">生成Q版3D图像</button>
             </div>
 
@@ -346,9 +346,9 @@
 
         const subjectCopy = {
             pet: {
-                uploadText: '点击或拖拽上传宠物照片',
-                placeholder: '请详细描述你的宠物...\n\n例如：一只橘色英短猫，圆脸大眼，毛色为浅橘带白色胸前斑块，短粗尾巴，坐姿，微笑表情',
-                hint: '描述越详细，生成效果越好（品种、毛色、花纹、姿态、表情等）',
+                uploadText: '点击或拖拽上传宠物照片，生成专属Q版形象',
+                placeholder: '请详细描述宠物专属特征...\n\n例如：一只橘色英短猫，圆脸大眼，浅橘毛色，胸前有白色斑块，短粗尾巴，戴红色项圈，坐姿，微笑表情',
+                hint: '宠物模式会优先保留照片里的品种、毛色花纹、眼睛、耳朵鼻口、体态、表情神态和配饰等专属特征',
                 emptyText: '请输入宠物描述'
             },
             person: {
