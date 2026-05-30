@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>宠物Q版3D生成器</title>
+    <title>Q版3D生成器</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -57,6 +57,41 @@
             border-radius: 16px;
             padding: 32px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+        .subject-section {
+            margin-bottom: 24px;
+        }
+        .field-label {
+            display: block;
+            color: #2d3748;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .subject-switch {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 6px;
+        }
+        .subject-option {
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: #4a5568;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            min-height: 42px;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+        .subject-option.active {
+            background: #fff;
+            color: #2d3748;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         .upload-zone {
             border: 2px dashed #cbd5e0;
@@ -205,8 +240,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>宠物Q版3D生成器</h1>
-        <p class="subtitle">上传宠物照片或输入描述，生成可爱的Q版3D模型</p>
+        <h1>Q版3D生成器</h1>
+        <p class="subtitle">上传宠物或人物照片，也可以输入描述生成可爱的专属Q版3D形象</p>
 
         <div class="tabs">
             <div class="tab active" data-tab="image">上传图片</div>
@@ -215,10 +250,18 @@
         </div>
 
         <div class="card">
+            <div class="subject-section" id="subject-section">
+                <label class="field-label">生成对象</label>
+                <div class="subject-switch" role="radiogroup" aria-label="生成对象">
+                    <button type="button" class="subject-option active" data-subject="pet" aria-pressed="true">宠物</button>
+                    <button type="button" class="subject-option" data-subject="person" aria-pressed="false">人物</button>
+                </div>
+            </div>
+
             <div class="panel active" id="panel-image">
                 <div class="upload-zone" id="upload-zone">
                     <div class="upload-icon">📷</div>
-                    <p class="upload-text">点击或拖拽上传宠物照片</p>
+                    <p class="upload-text" id="upload-text">点击或拖拽上传宠物照片</p>
                     <p class="hint">支持 JPG / PNG，最大 20MB</p>
                     <input type="file" id="file-input" accept="image/*">
                 </div>
@@ -231,7 +274,7 @@
 
             <div class="panel" id="panel-text">
                 <textarea id="desc-input" placeholder="请详细描述你的宠物...&#10;&#10;例如：一只橘色英短猫，圆脸大眼，毛色为浅橘带白色胸前斑块，短粗尾巴，坐姿，微笑表情"></textarea>
-                <p class="hint">描述越详细，生成效果越好（品种、毛色、花纹、姿态、表情等）</p>
+                <p class="hint" id="desc-hint">描述越详细，生成效果越好（品种、毛色、花纹、姿态、表情等）</p>
                 <button class="btn" id="btn-text">生成Q版3D图像</button>
             </div>
 
@@ -292,9 +335,49 @@
         const resultDiv = document.getElementById('result');
         const resultContent = document.getElementById('result-content');
         const errorDiv = document.getElementById('error');
+        const subjectSection = document.getElementById('subject-section');
+        const subjectOptions = document.querySelectorAll('.subject-option');
+        const uploadText = document.getElementById('upload-text');
+        const descHint = document.getElementById('desc-hint');
 
         let selectedFile = null;
         let selectedFileUrl = null;
+        let currentSubject = 'pet';
+
+        const subjectCopy = {
+            pet: {
+                uploadText: '点击或拖拽上传宠物照片',
+                placeholder: '请详细描述你的宠物...\n\n例如：一只橘色英短猫，圆脸大眼，毛色为浅橘带白色胸前斑块，短粗尾巴，坐姿，微笑表情',
+                hint: '描述越详细，生成效果越好（品种、毛色、花纹、姿态、表情等）',
+                emptyText: '请输入宠物描述'
+            },
+            person: {
+                uploadText: '点击或拖拽上传人物照片，生成专属Q版形象',
+                placeholder: '请详细描述人物专属特征...\n\n例如：短发年轻女性，圆脸，单眼皮，戴银色圆框眼镜，穿浅蓝色连帽卫衣，微笑，站姿，干净背景',
+                hint: '人物模式会优先保留照片里的发型、脸型、五官气质、表情神态、服装和配饰等专属特征',
+                emptyText: '请输入人物描述'
+            }
+        };
+
+        function updateSubjectCopy() {
+            const copy = subjectCopy[currentSubject];
+            uploadText.textContent = copy.uploadText;
+            descInput.placeholder = copy.placeholder;
+            descHint.textContent = copy.hint;
+        }
+
+        subjectOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                currentSubject = option.dataset.subject;
+                subjectOptions.forEach(o => {
+                    const isActive = o === option;
+                    o.classList.toggle('active', isActive);
+                    o.setAttribute('aria-pressed', String(isActive));
+                });
+                updateSubjectCopy();
+                hideError();
+            });
+        });
 
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -302,6 +385,7 @@
                 tab.classList.add('active');
                 panels.forEach(p => p.classList.remove('active'));
                 document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+                subjectSection.style.display = tab.dataset.tab === 'direct3d' ? 'none' : 'block';
                 hideError();
                 resultDiv.style.display = 'none';
             });
@@ -373,14 +457,16 @@
             if (!selectedFile) return;
             const formData = new FormData();
             formData.append('file', selectedFile);
+            formData.append('subject_type', currentSubject);
             await doGenerate('/generate/image', { method: 'POST', body: formData });
         });
 
         btnText.addEventListener('click', async () => {
             const desc = descInput.value.trim();
-            if (!desc) { showError('请输入宠物描述'); return; }
+            if (!desc) { showError(subjectCopy[currentSubject].emptyText); return; }
             const formData = new FormData();
             formData.append('description', desc);
+            formData.append('subject_type', currentSubject);
             await doGenerate('/generate/text', { method: 'POST', body: formData });
         });
 

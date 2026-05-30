@@ -11,6 +11,8 @@ from config import API_KEY
 app = FastAPI(title="Pet Q-Version 3D Generator")
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static", html=True), name="static")
 
+VALID_SUBJECT_TYPES = {"pet", "person"}
+
 
 @app.middleware("http")
 async def no_cache_index_html(request, call_next):
@@ -56,7 +58,9 @@ async def startup():
 
 
 @app.post("/generate/image")
-async def generate_from_image(file: UploadFile = File(...)):
+async def generate_from_image(file: UploadFile = File(...), subject_type: str = Form("pet")):
+    if subject_type not in VALID_SUBJECT_TYPES:
+        raise HTTPException(status_code=400, detail="subject_type must be 'pet' or 'person'")
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Only image files are accepted")
 
@@ -64,16 +68,18 @@ async def generate_from_image(file: UploadFile = File(...)):
     if len(image_bytes) > 20 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Image size must be under 20MB")
 
-    result = await generate_qversion_from_image(image_bytes, file.content_type)
+    result = await generate_qversion_from_image(image_bytes, file.content_type, subject_type)
     return JSONResponse(content=result)
 
 
 @app.post("/generate/text")
-async def generate_from_text(description: str = Form(...)):
+async def generate_from_text(description: str = Form(...), subject_type: str = Form("pet")):
+    if subject_type not in VALID_SUBJECT_TYPES:
+        raise HTTPException(status_code=400, detail="subject_type must be 'pet' or 'person'")
     if not description.strip():
         raise HTTPException(status_code=400, detail="Description cannot be empty")
 
-    result = await generate_qversion_from_text(description.strip())
+    result = await generate_qversion_from_text(description.strip(), subject_type)
     return JSONResponse(content=result)
 
 
